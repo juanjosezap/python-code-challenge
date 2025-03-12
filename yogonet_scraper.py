@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
+import spacy
 
 # Selenium Remote WebDriver URL (from Docker Compose)
 SELENIUM_URL = os.getenv("SELENIUM_URL", "http://selenium:4444/wd/hub")
@@ -115,15 +116,29 @@ def scrape_yogonet():
 
     return scraped_data
 
+def extract_entities(text, entity_label):
+
+    # Load spaCy's English model
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    return [ent.text for ent in doc.ents if ent.label_ == entity_label]
+
 def post_process(scraped_data):
     
     df = pd.DataFrame(scraped_data)
     df['totalwords'] = [len(x.split()) for x in df['title'].tolist()]
     df['totalcharacters'] = df['title'].str.len()
     df['capital_word_count'] = df['title'].apply(count_words_starting_with_capital)
+    # Apply extraction functions
+    df["persons"] = df["title"].apply(lambda x: extract_entities(x, "PERSON"))
+    df["organizations"] = df["title"].apply(lambda x: extract_entities(x, "ORG"))
+    df["locations"] = df["title"].apply(lambda x: extract_entities(x, "GPE"))
+
     return df
+
 
 if __name__ == "__main__":
     scraped_data = scrape_yogonet()
     post_process_data = post_process(scraped_data)
-    print(post_process_data)
+    df1 = post_process_data[["persons", "organizations","locations"]]
+    print(df1)

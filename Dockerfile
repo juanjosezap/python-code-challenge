@@ -8,5 +8,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 WORKDIR /app
 COPY yogonet_scraper.py /app/yogonet_scraper.py
 
+RUN python -m spacy download en_core_web_sm
 # Command to run the scraper
 CMD ["python", "yogonet_scraper.py"]
