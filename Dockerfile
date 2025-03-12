@@ -1,7 +1,8 @@
 FROM python:3.10-slim
 
 # Install dependencies
-RUN pip install --no-cache-dir selenium webdriver-manager requests
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy the script into the container
 WORKDIR /app
