@@ -6,12 +6,16 @@ services:
     container_name: selenium
     ports:
       - "4444:4444"
-    shm_size: "2g"
+    shm_size: "4g"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
       interval: 5s
       retries: 10
       start_period: 10s
+    environment:
+      - SE_NODE_SESSION_TIMEOUT=600  # Increase session timeout to 10 minutes
+      - SE_SESSION_REQUEST_TIMEOUT=600
+      - SE_SESSION_RETRY_INTERVAL=2
 
   scraper:
     build: .
@@ -21,3 +25,4 @@ services:
         condition: service_healthy
     environment:
       - SELENIUM_URL=http://selenium:4444/wd/hub
+    
